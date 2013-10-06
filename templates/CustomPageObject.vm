@@ -1,0 +1,13 @@
+package ${package};
+
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
+public class ${classname} extends ${superclassname} {
+
+    public ${classname}(HtmlPage page) {
+        super(page);
+    }
+    
+    /* add your own page object methods here */
+    
+}

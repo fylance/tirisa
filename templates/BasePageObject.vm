@@ -1,0 +1,134 @@
+package ${package};
+
+import java.io.IOException;
+
+import java.util.List;
+
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextArea;
+import com.gargoylesoftware.htmlunit.html.HtmlSelect;
+import com.gargoylesoftware.htmlunit.html.HtmlOption;
+import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlImageInput;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.DomNode;
+
+import de.fylance.tirisa.BasePageObject;
+import de.fylance.tirisa.TirisaUtils;
+
+
+@SuppressWarnings("unused")
+public class ${classname} extends ${superclassname} {
+
+    public ${classname}(HtmlPage page) {
+        super(page);
+    }
+    
+#foreach($id in $ids)
+    /** get dome node with id "${id.id}" */
+    public DomNode getNode${id.methodName}() { return (this.getPage()).getFirstByXPath("${id.xpath}"); }
+    
+#end
+#foreach($name in $names)
+    /** get dome node with name: "${name.name}" */
+    public DomNode getNode${name.methodName}() { return (this.getPage()).${name.gettingMethod}; }
+    
+#end
+#foreach($xpath in $xpaths)
+	/** get dome node with XPath "${xpath.xpath}" */
+	public DomNode getNode${xpath.methodName}() { return (this.getPage()).getFirstByXPath("${xpath.xpath}"); }
+
+#end
+#foreach($form in $forms)
+    /** fill form node identified by ${form.identifier} */
+    public void formFill${form.fillerMethodName}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")String ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") boolean ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file")String filePath${inputElement.getGetterName()}, String fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) boolean $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()), #end#end)
+    {
+#foreach($inputElement in $form.inputElements)
+#if( $inputElement.getType() == "text" )
+        HtmlTextInput ${inputElement.getIdentifier()}InputElement = (HtmlTextInput) this.getNode${inputElement.getGetterName()}();
+        ${inputElement.getIdentifier()}InputElement.setValueAttribute(${inputElement.getIdentifier()});
+        
+#end
+#if( $inputElement.getType() == "password" )
+        HtmlPasswordInput ${inputElement.getIdentifier()}InputElement = (HtmlPasswordInput) this.getNode${inputElement.getGetterName()}();
+        ${inputElement.getIdentifier()}InputElement.setValueAttribute(${inputElement.getIdentifier()});
+        
+#end
+#if( $inputElement.getType() == "checkbox" )
+        HtmlCheckBoxInput ${inputElement.getIdentifier()}InputElement = (HtmlCheckBoxInput) this.getNode${inputElement.getGetterName()}();
+        ${inputElement.getIdentifier()}InputElement.setChecked(${inputElement.getIdentifier()});
+        
+#end
+#if( $inputElement.getType() == "radio" )
+        HtmlRadioButtonInput ${inputElement.getIdentifier()}InputElement = (HtmlRadioButtonInput) this.getNode${inputElement.getGetterName()}();
+        ${inputElement.getIdentifier()}InputElement.setChecked(${inputElement.getIdentifier()});
+        
+#end
+#if( $inputElement.getType() == "textarea" )
+        HtmlTextArea ${inputElement.getIdentifier()}InputElement = (HtmlTextArea) this.getNode${inputElement.getGetterName()}();
+        ${inputElement.getIdentifier()}InputElement.setText(${inputElement.getIdentifier()});
+        
+#end
+#if( $inputElement.getType() == "select" )
+		HtmlSelect ${inputElement.getIdentifier()}InputElement = (HtmlSelect) this.getNode${inputElement.getGetterName()}();
+		HtmlOption ${inputElement.getIdentifier()}Option = ${inputElement.getIdentifier()}InputElement.getOptionByValue(${inputElement.getIdentifier()});
+		${inputElement.getIdentifier()}InputElement.setSelectedAttribute(${inputElement.getIdentifier()}Option, true);
+		
+#end
+#if( $inputElement.getType() == "multiselect" )
+		HtmlSelect ${inputElement.getIdentifier()}InputElement = (HtmlSelect) this.getNode${inputElement.getGetterName()}();
+		List<HtmlOption> ${inputElement.getIdentifier()}OptionsList = ${inputElement.getIdentifier()}InputElement.getOptions();
+#foreach($option in $inputElement.getStringOptionsList())
+		for(int i=0; i<${inputElement.getIdentifier()}OptionsList.size(); i++) {
+			String optionName = "${inputElement.getIdentifier()}"+TirisaUtils.camelize(${inputElement.getIdentifier()}OptionsList.get(i).getValueAttribute(), true);
+			if(optionName.equals("$option")) {
+				${inputElement.getIdentifier()}InputElement.setSelectedAttribute(${inputElement.getIdentifier()}OptionsList.get(i), $option);
+			}
+		}
+		
+#end
+#end
+#if( $inputElement.getType() == "file" )
+        HtmlFileInput ${inputElement.getIdentifier()}InputElement = (HtmlFileInput) this.getNode${inputElement.getGetterName()}();
+        ${inputElement.getIdentifier()}InputElement.setValueAttribute(filePath${inputElement.getGetterName()});
+        ${inputElement.getIdentifier()}InputElement.setContentType(fileType${inputElement.getGetterName()});
+        
+#end#end	}
+    
+#foreach($submitElement in $form.submitElements)
+#if( $submitElement.getType() == "submit")
+	/** fill and submit form node identified by ${form.identifier} */
+	public HtmlPage formSubmit${form.fillerMethodName}By${submitElement.getGetterName()}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")String ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") boolean ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file")String filePath${inputElement.getGetterName()}, String fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) boolean $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()) ,#end#end) {
+		this.formFill${form.fillerMethodName}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file") filePath${inputElement.getGetterName()}, fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()) ,#end#end);
+		HtmlSubmitInput ${submitElement.getIdentifier()}InputElement = (HtmlSubmitInput) this.getNode${submitElement.getGetterName()}();
+		try { return ${submitElement.getIdentifier()}InputElement.click(); } catch (IOException e) { e.printStackTrace(); }
+		return null;
+	}
+#end
+#if( $submitElement.getType() == "image")
+	/** fill and submit form node identified by ${form.identifier} */
+	public HtmlPage formSubmit${form.fillerMethodName}By${submitElement.getGetterName()}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")String ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") boolean ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file")String filePath${inputElement.getGetterName()}, String fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) boolean $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()) ,#end#end) {
+		this.formFill${form.fillerMethodName}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file") filePath${inputElement.getGetterName()}, fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()) ,#end#end);
+		HtmlImageInput ${submitElement.getIdentifier()}InputElement = (HtmlImageInput) this.getNode${submitElement.getGetterName()}();
+		try { return ${submitElement.getIdentifier()}InputElement.click(); } catch (IOException e) { e.printStackTrace(); }
+		return null;
+	}
+#end
+#if( $submitElement.getType() == "buttonbutton" || $submitElement.getType() == "buttonsubmit")
+	/** fill and submit form node identified by ${form.identifier} */
+	public HtmlPage formSubmit${form.fillerMethodName}By${submitElement.getGetterName()}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")String ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") boolean ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file")String filePath${inputElement.getGetterName()}, String fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) boolean $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()), #end#end) {
+		this.formFill${form.fillerMethodName}(#foreach($inputElement in $form.inputElements)#if($inputElement.getType() == "text" || $inputElement.getType() == "password" || $inputElement.getType() == "textarea" || $inputElement.getType() == "select")${inputElement.getIdentifier()}#end#if($inputElement.getType() == "checkbox" || $inputElement.getType() == "radio") ${inputElement.getIdentifier()}#end#if($inputElement.getType() == "file") filePath${inputElement.getGetterName()}, fileType${inputElement.getGetterName()}#end#if($inputElement.getType() == "multiselect")#foreach($option in $inputElement.getStringOptionsList()) $option#if($velocityCount != $inputElement.getStringOptionsList().size()) ,#end#end#end#if($velocityCount != $form.inputElements.size()), #end#end);
+		HtmlButton ${submitElement.getIdentifier()}InputElement = (HtmlButton) this.getNode${submitElement.getGetterName()}();
+		try { return ${submitElement.getIdentifier()}InputElement.click(); } catch (IOException e) { e.printStackTrace(); }
+		return null;
+	}
+#end#end
+    
+#end
+}
